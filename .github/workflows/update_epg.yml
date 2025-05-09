@@ -1,0 +1,44 @@
+name: 每日更新EPG数据
+
+on:
+  schedule:
+    # 每天UTC时间01:00运行（对应北京时间09:00）
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  update-epg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: 运行EPG整合脚本
+        run: python epg_integrator.py
+
+      - name: 配置Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: 提交更新的EPG文件
+        run: |
+          git add epg/e.xml epg/e.xml.gz
+          git diff --staged --quiet || git commit -m "自动更新: EPG数据 $(date +'%Y-%m-%d')"
+
+      - name: 推送更改
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
