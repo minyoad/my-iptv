@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="180" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景矩形 -->
+  <rect width="300" height="180" fill="#e0e0e0" rx="10"/>
+  <!-- TV图标 -->
+  <rect x="90" y="45" width="120" height="80" rx="8" fill="#808080"/>
+  <rect x="125" y="125" width="50" height="10" fill="#808080"/>
+  <!-- 天线 -->
+  <line x1="115" y1="45" x2="140" y2="25" stroke="#808080" stroke-width="6"/>
+  <line x1="185" y1="45" x2="160" y2="25" stroke="#808080" stroke-width="6"/>
+</svg>
