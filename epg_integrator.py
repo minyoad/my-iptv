@@ -218,7 +218,7 @@ def normalize_channel_name(name, aliases):
 def integrate_epg_data(epg_sources, aliases):
     tv_element = ET.Element('tv')
     tv_element.set('generator-info-name', 'EPG Integrator')
-    tv_element.set('generator-info-url', 'https://github.com/user/my-iptv')
+    tv_element.set('generator-info-url', 'https://github.com/minyoad/my-iptv')
     tv_element.set('date', datetime.now().strftime('%Y-%m-%d'))
 
     processed_channels = set()          # 已写入 <channel> 的模板名称

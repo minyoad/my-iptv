@@ -1,5 +1,5 @@
 https://raw.githubusercontent.com/sparkssssssssss/epg/main/pp.xml
-http://epg.51zmt.top:8000/e.xml
+http://epg.51zmt.top:8000/e1.xml.gz
 https://raw.githubusercontent.com/fanmingming/live/main/e.xml
-https://epg.pw/xmltv/epg_CN.xml
-https://baoer.org.cn/x.xml
+https://epg.pw/xmltv/epg_CN.xml.gz
+https://epg.pw/xmltv/epg_HK.xml.gz
