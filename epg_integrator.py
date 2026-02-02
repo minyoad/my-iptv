@@ -53,8 +53,27 @@ def download_epg_source(url):
     """下载EPG源文件"""
     try:
         logger.info(f"正在下载EPG源: {url}")
-        response = requests.get(url, timeout=30)
+        # 添加headers明确接受gzip压缩
+        headers = {
+            'Accept-Encoding': 'gzip, deflate'
+        }
+        response = requests.get(url, timeout=30, headers=headers)
         response.raise_for_status()
+        
+        # 检查是否是gzip压缩的响应
+        content_encoding = response.headers.get('Content-Encoding', '')
+        content = response.content
+        
+        # 手动解压gzip内容，确保在所有情况下都能正确解压
+        if 'gzip' in content_encoding or (len(content) > 0 and content[:2] == b'\x1f\x8b'):
+            logger.info(f"检测到gzip压缩内容，正在解压: {url}")
+            try:
+                import io
+                with gzip.GzipFile(fileobj=io.BytesIO(content), mode='rb') as f:
+                    content = f.read()
+                logger.info(f"成功解压gzip内容")
+            except Exception as e:
+                logger.warning(f"手动解压gzip失败，使用原始内容: {e}")
         
         # 获取内容类型和编码
         content_type = response.headers.get('Content-Type', '')
@@ -70,7 +89,7 @@ def download_epg_source(url):
         # 如果没有指定编码，尝试从内容中检测
         if not encoding:
             # 尝试从XML声明中获取编码
-            content_start = response.content[:1000].decode('utf-8', errors='ignore')
+            content_start = content[:1000].decode('utf-8', errors='ignore')
             encoding_match = re.search(r'encoding=["\']([^"\']*)["\']', content_start)
             if encoding_match:
                 encoding = encoding_match.group(1).lower().replace('-', '')
@@ -102,8 +121,8 @@ def download_epg_source(url):
             for enc in encodings_to_try:
                 try:
                     # 尝试解码，计算错误字符数量
-                    decoded = response.content.decode(enc, errors='ignore')
-                    error_count = len(response.content) - len(decoded.encode(enc, errors='ignore'))
+                    decoded = content.decode(enc, errors='ignore')
+                    error_count = len(content) - len(decoded.encode(enc, errors='ignore'))
                     
                     if error_count < min_errors:
                         min_errors = error_count
@@ -124,11 +143,11 @@ def download_epg_source(url):
             else:
                 # 如果所有编码都失败，使用utf-8并忽略错误
                 logger.warning(f"无法确定EPG源的编码，使用UTF-8并忽略错误: {url}")
-                return response.content.decode('utf-8', errors='ignore')
+                return content.decode('utf-8', errors='ignore')
         
         # 使用检测到的编码
         logger.info(f"使用编码 {encoding} 解析EPG源: {url}")
-        return response.content.decode(encoding, errors='ignore')
+        return content.decode(encoding, errors='ignore')
     except Exception as e:
         logger.error(f"下载EPG源失败 {url}: {e}")
         return None
@@ -207,6 +226,29 @@ def parse_epg_xml(xml_content):
                 return None
     except Exception as e:
         logger.error(f"解析XML失败: {e}")
+        return None
+
+# 从本地gzip文件读取EPG数据
+def read_local_gzip_epg(gzip_file):
+    """从本地gzip压缩的XML文件读取EPG数据"""
+    if not os.path.exists(gzip_file):
+        logger.error(f"本地gzip文件不存在: {gzip_file}")
+        return None
+    
+    try:
+        logger.info(f"正在读取本地gzip文件: {gzip_file}")
+        
+        # 打开并解压gzip文件
+        with gzip.open(gzip_file, 'rb') as f:
+            # 读取解压后的内容
+            xml_content = f.read().decode('utf-8', errors='ignore')
+            
+        logger.info(f"成功读取并解压gzip文件，大小: {len(xml_content)} 字符")
+        
+        # 解析XML内容
+        return parse_epg_xml(xml_content)
+    except Exception as e:
+        logger.error(f"读取本地gzip文件失败: {e}")
         return None
 
 # 规范化频道名称

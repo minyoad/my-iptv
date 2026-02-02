@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/sparkssssssssss/epg/main/pp.xml
+https://raw.githubusercontent.com/sparkssssssssss/epg/main/pp.xml.gz
 http://epg.51zmt.top:8000/e1.xml.gz
 https://raw.githubusercontent.com/fanmingming/live/main/e.xml
 https://epg.pw/xmltv/epg_CN.xml.gz
