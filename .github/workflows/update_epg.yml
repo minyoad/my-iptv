@@ -41,7 +41,7 @@ jobs:
       # 现在基于最新状态提交或 amend
       - name: 提交更新的 EPG 文件（智能 amend / 新建）
         run: |
-          git add epg/e.xml epg/e.xml.gz
+          git add epg/e.xml.gz
           # 如果暂存区没变化直接退出
           git diff --staged --quiet && exit 0
 
