@@ -512,3 +512,12 @@ if __name__ == "__main__":
     else:
         logger.error(f"处理失败，耗时 {duration:.2f} 秒")
         sys.exit(1)
+    
+    # 移除 e.xml 文件，保留 e.xml.gz
+    if os.path.exists(OUTPUT_XML):
+        try:
+            os.remove(OUTPUT_XML)
+            logger.info(f"已删除临时文件: {OUTPUT_XML}")
+        except Exception as e:
+            logger.warning(f"删除临时文件失败: {e}")
+            
