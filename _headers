@@ -1,0 +1,9 @@
+# 为 /epg/ 目录下的 EPG 压缩包设置 6 小时缓存
+/epg/*
+  Cache-Control: public, max-age=21600, s-maxage=21600
+  Access-Control-Allow-Origin: *
+
+# 为 /logo/ 目录下的频道 Logo 设置 30 天强缓存（提升 TV 盒子流畅度）
+/logo/*
+  Cache-Control: public, max-age=2592000, s-maxage=2592000
+  Access-Control-Allow-Origin: *
