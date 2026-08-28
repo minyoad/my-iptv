@@ -1,0 +1,68 @@
+name: 每日更新 IPTV 源（iptvs.mybacc.com）
+
+on:
+  schedule:
+    # 每天UTC 17:20 运行（对应北京时间 01:20），避开EPG任务
+    - cron: '20 17 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  update-iptvs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # 需要完整历史才能 amend
+
+      - name: 配置 Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: 拉取远程最新变更
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: 下载播放列表与EPG
+        run: |
+          set -e
+          mkdir -p iptvs
+          cd iptvs
+
+          download() {
+            url="$1"
+            out="$2"
+            echo "下载: $out <- $url"
+            curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 20 --max-time 300 \
+              -H "User-Agent: Mozilla/5.0" \
+              -o "$out.tmp" "$url"
+            mv "$out.tmp" "$out"
+            echo "  完成: $(wc -c < "$out") 字节"
+          }
+
+          download "https://iptvs.mybacc.com/api/export/m3u?isp=%E7%94%B5%E4%BF%A1&status=active&maxPerChannel=20" "tv_电信.m3u"
+          download "https://iptvs.mybacc.com/api/export/txt?isp=%E7%94%B5%E4%BF%A1&status=active&maxPerChannel=20"  "tv_电信.txt"
+          download "https://iptvs.mybacc.com/api/export/m3u?isp=%E7%A7%BB%E5%8A%A8&status=active&maxPerChannel=20"  "tv_移动.m3u"
+          download "https://iptvs.mybacc.com/api/export/txt?isp=%E7%A7%BB%E5%8A%A8&status=active&maxPerChannel=20"  "tv_移动.txt"
+          download "https://iptvs.mybacc.com/api/export/m3u?category=%E8%BD%AE%E6%92%AD%E9%A2%91%E9%81%93&status=active&maxPerChannel=10" "轮播.m3u"
+          download "https://iptvs.mybacc.com/api/export/epg.xml.gz" "epg.xml.gz"
+
+      - name: 提交更新（智能 amend / 新建）
+        run: |
+          git add iptvs/
+          # 暂存区没变化直接退出
+          git diff --staged --quiet && exit 0
+
+          last_msg=$(git log -1 --pretty=%s || true)
+          if [[ "$last_msg" =~ ^自动更新:IPTV源 ]]; then
+            git commit --amend -m "自动更新:IPTV源 $(date +'%Y-%m-%d')"
+          else
+            git commit -m "自动更新:IPTV源 $(date +'%Y-%m-%d')"
+          fi
+
+      - name: 推送更改
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ github.ref }}
+          force: true      # amend 后需要 force
