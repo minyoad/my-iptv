@@ -49,6 +49,10 @@ jobs:
       - name: 运行蜻蜓FM EPG生成脚本
         run: python qingtingfm_epg.py --workers 16
 
+      # ---------- 1.2 生成云视听（radio.cn）电台EPG ----------
+      - name: 运行云视听 EPG生成脚本
+        run: python radio_cn_epg.py --input list/radio_cn_channels.csv --workers 16 --days 2 --no-resume
+
       # ---------- 2. 下载 iptvs.mybacc.com 播放列表与EPG ----------
       - name: 下载播放列表与EPG
         run: |
@@ -91,7 +95,7 @@ jobs:
       # ---------- 3. 一次性提交（智能 amend / 新建） ----------
       - name: 提交更新（智能 amend / 新建）
         run: |
-          git add epg/e.xml.gz epg/qingtingfm.xml.gz iptvs/
+          git add epg/e.xml.gz epg/qingtingfm.xml.gz epg/radio_cn.xml.gz iptvs/
           # 暂存区没变化直接退出
           git diff --staged --quiet && exit 0
 

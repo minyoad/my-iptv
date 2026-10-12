@@ -170,5 +170,8 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+# 爬虫临时输出与断点进度文件
+output/
+
 # PyPI configuration file
 .pypirc
